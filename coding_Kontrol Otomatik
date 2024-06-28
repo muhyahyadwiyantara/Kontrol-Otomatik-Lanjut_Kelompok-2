@@ -1,0 +1,53 @@
+% Parameter Sistem
+m = 1; % Massa
+k = 1; % Konstanta Pegas
+b = 0.2; % Koefisien Redaman
+
+A = [0 1; -k/m -b/m];
+B = [0; 1/m];
+C = [1 0];
+D = 0;
+
+% Matriks Penimbang untuk LQR
+Q = C'*C;
+R = 1;
+
+% Desain Regulator LQR
+[K,~,~] = lqr(A, B, Q, R);
+
+% Matriks Penimbang untuk Filter Kalman
+W = 0.01*eye(2); % Noise Proses
+V = 0.01; % Noise Pengukuran
+
+% Desain Filter Kalman
+[L,P,E] = lqe(A, eye(2), C, W, V);
+
+% Matriks Penimbang untuk LQG
+Acl = [A-B*K B*K; zeros(size(A)) A-L*C];
+Bcl = [B; zeros(size(B))];
+Ccl = [C zeros(size(C))];
+
+sys_cl = ss(Acl, Bcl, Ccl, D);
+
+% Simulasi Sistem
+t = 0:0.01:10;
+u = zeros(size(t));
+x0 = [1; 0; 1; 0]; % Kondisi Awal
+
+[y,t,x] = lsim(sys_cl, u, t, x0);
+
+% Plot Hasil
+figure;
+subplot(2,1,1);
+plot(t, x(:,1), 'b', t, x(:,3), 'r--');
+xlabel('Waktu (s)');
+ylabel('Posisi');
+legend('Posisi Aktual', 'Estimasi Posisi');
+grid on;
+
+subplot(2,1,2);
+plot(t, x(:,2), 'b', t, x(:,4), 'r--');
+xlabel('Waktu (s)');
+ylabel('Kecepatan');
+legend('Kecepatan Aktual', 'Estimasi Kecepatan');
+grid on;

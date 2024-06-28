@@ -15,6 +15,11 @@ R = 1;
 % Desain Regulator LQR
 [K,~,~] = lqr(A, B, Q, R);
 
+% Hitung nilai eigen untuk analisis kestabilan
+eigenvalues = eig(A - B*K);
+disp('Nilai eigen dari matriks A - BK:');
+disp(eigenvalues);
+
 % Matriks Penimbang untuk Filter Kalman
 W = 0.01*eye(2); % Noise Proses
 V = 0.01; % Noise Pengukuran
